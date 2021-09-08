@@ -1,0 +1,97 @@
+<apex:page controller="CustomizedListWithController" >
+    <style>
+        .ContactHeader {
+        	display: none;
+        }
+    </style>
+    <apex:form id="form">
+        <!-- Input form -->
+        <apex:pageBlock title="Search your accounts/contacts?" id="query_tab">
+            <apex:inputText value="{! searchValue }"/>
+        	<apex:commandButton action="{! find }" value="Search" id="Search"/>
+        </apex:pageBlock>
+        
+        <!-- Result List -->
+        <apex:pageBlock title="Result of Search" id="result_list" mode="mainDetail" rendered="{!doneLookup}">
+            <!-- Table of result list for Account -->
+            <apex:pageBlockTable value="{! accounts }" var="ct">
+                <apex:column value="{! ct.Name }" headerValue="Record Name" width="300" rendered="{!(sizeOfAccountList > 0)}"/>
+                <apex:column value="{! 'Account' }" headerValue="Record Type" width="300" rendered="{!(sizeOfAccountList > 0)}"/>
+                <apex:column value="{! ct.Counter__c }" headerValue="Counter" width="300" rendered="{!(sizeOfAccountList > 0)}"/>
+                <apex:column headerValue="Click to update counter" width="300" rendered="{!(sizeOfAccountList > 0)}">
+                    <a href="#" onclick="increaseCounterForAccount('{!ct.Id}'); return false">Increment Counter</a>
+                </apex:column>
+                <apex:column headerValue="Click to open" width="300" rendered="{!(sizeOfAccountList > 0)}">
+                    <a href="#" onclick="openLookupPopup('{!ct.Id}'); return false">View</a>
+                </apex:column>
+            </apex:pageBlockTable>
+            
+            <!-- Table of result list for Contact (Without header in case of having results from Account) -->
+            <apex:pageBlockTable value="{! contacts }" var="ct" style="border-top: none;" rendered="{!(sizeOfAccountList > 0)}">
+                <apex:column value="{! ct.Name }" headerValue="Record Name" headerClass="ContactHeader" width="300"/>
+            	<apex:column value="{! 'Contact' }" headerValue="Record Type" headerClass="ContactHeader" width="300"/>
+                <apex:column value="{! ct.Counter__c }" headerValue="Counter" headerClass="ContactHeader" width="300"/>
+                <apex:column headerValue="Click to update counter" headerClass="ContactHeader" width="300" rendered="{!(sizeOfAccountList > 0)}">
+                    <a href="#" onclick="increaseCounterForContact('{!ct.Id}'); return false">Increment Counter</a>
+                </apex:column>
+                <apex:column headerValue="Click to open" headerClass="ContactHeader" width="300">
+                    <a href="#" onclick="openLookupPopup('{!ct.Id}'); return false">View</a>
+                </apex:column>           
+            </apex:pageBlockTable>
+            
+            <!-- Table of result list for Contact (With header in case of having no results from Account) -->
+            <apex:pageBlockTable value="{! contacts }" var="ct" rendered="{!(sizeOfAccountList <= 0)}">
+                <apex:column value="{! ct.Name }" headerValue="Record Name" width="300" rendered="{!(sizeOfContactList > 0)}"/>
+            	<apex:column value="{! 'Contact' }" headerValue="Record Type" width="300" rendered="{!(sizeOfContactList > 0)}"/>
+                <apex:column value="{! ct.Counter__c }" headerValue="Counter" width="300" rendered="{!(sizeOfContactList > 0)}"/>
+                <apex:column headerValue="Click to update counter" width="300" rendered="{!(sizeOfContactList > 0)}">
+                    <a href="#" onclick="increaseCounterForContact('{!ct.Id}'); return false">Increment Counter</a>
+                </apex:column>
+				<apex:column headerValue="Click to open" width="300" rendered="{!(sizeOfContactList > 0)}">
+                    <a href="#" onclick="openLookupPopup('{!ct.Id}'); return false">View</a>
+                </apex:column>            
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+    <script>
+    var newWin = null;
+    
+    // The function used to open a popup displaying the detail of a record
+    function openLookupPopup(id){
+        var url = "/apex/DetailPage?id=" + id;
+        newWin=window.open(url, 'Popup','height=600,width=800,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,status=no');
+        if (window.focus) {
+            newWin.focus();
+        }            
+        return false;
+    }
+    
+    // The function used to increase field Counter in Account table
+    function increaseCounterForAccount(id) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.CustomizedListWithController.increaseCounterForAccount}',
+            id, 
+            function(result, event){
+                if (event.status) {
+                    document.getElementById('{! $Component.form.query_tab.Search}').click();
+                }
+            }, 
+            {escape: true}
+        );
+    }
+    
+    // The function used to increase field Counter in Contact table
+    function increaseCounterForContact(id) {
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.CustomizedListWithController.increaseCounterForContact}',
+            id, 
+            function(result, event){
+                if (event.status) {
+                    document.getElementById('{! $Component.form.query_tab.Search}').click();
+                }
+            }, 
+            {escape: true}
+        );
+    }
+  </script>
+</apex:page>

@@ -1,0 +1,21 @@
+global class ContactWrapper {
+	public String contactId;
+    public String name;
+    public String phone;
+    public String email;
+    
+    private transient Contact[] contact;
+    
+    public Contact getContact() {
+        this.contact = Database.query(
+            'SELECT Id, Name, Counter__c ' +
+            'FROM Contact ' +
+            'WHERE Id = \'' + this.contactId + '\' '
+        );
+        if (this.contact.size() == 0) {
+            return null;
+        } else {
+            return this.contact.get(0);
+        }
+    }
+}

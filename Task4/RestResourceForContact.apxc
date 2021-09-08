@@ -1,0 +1,30 @@
+@RestResource(urlMapping='/contact/*')
+global with sharing class RestResourceForContact {
+    @HttpPost
+    global static Map<String, String> doPost(List<ContactWrapper> contacts) {
+        List<Contact> contactsToUpdate = new List<Contact>();
+        Map<String, String> result = new Map<String, String>();
+    
+        for (ContactWrapper contact : contacts) {
+            Contact c = contact.getContact();
+            if (c == null) {
+                result.put(contact.contactId, 'Cannot find to update');
+            } else {
+                c.Phone = contact.phone;
+                c.Email = contact.email;
+                contactsToUpdate.add(c);
+                result.put(contact.contactId, 'Updated successfully');
+            }
+        }
+    
+        update contactsToUpdate;
+        
+        return result;
+    }
+	
+    @HttpGet
+    global static List<Contact> doGet() {
+        List<Contact> result = [SELECT Id, Name, Phone, Email FROM Contact];
+        return result;
+    }
+}

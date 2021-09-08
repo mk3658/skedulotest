@@ -1,0 +1,5 @@
+trigger resetActiveFieldBeforeApprovalProcess on Contact (before insert) {
+    for (Contact a:Trigger.New) {
+        a.Active__c = False;
+    }
+}

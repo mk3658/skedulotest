@@ -1,0 +1,51 @@
+global with sharing class CustomizedListWithController {
+    public String searchValue{get; set;}
+    public Integer sizeOfAccountList{get; set;}
+    public Integer sizeOfContactList{get; set;}
+    public Boolean doneLookup {get; set;}
+    
+    public CustomizedListWithController() {
+        doneLookup = false;
+    }
+    
+    public List<Account> getAccounts() {
+        List<Account> results = Database.query(
+            'SELECT Id, Name, Counter__c ' +
+            'FROM Account ' +
+            'WHERE Name LIKE \'%' + searchValue + '%\''
+        );
+        sizeOfAccountList = results.size();
+        return results;
+    }
+    
+    public List<Contact> getContacts() {
+        List<Contact> results = Database.query(
+            'SELECT Id, Name, Counter__c ' +
+            'FROM Contact ' +
+            'WHERE Name LIKE \'%' + searchValue + '%\' '
+        );
+        sizeOfContactList = results.size();
+        return results;
+    }
+    
+    public PageReference find() {
+        doneLookup=true;
+        return null;
+    }
+    
+    @RemoteAction
+    global static PageReference increaseCounterForAccount(String objectId) {
+        Account a = [SELECT Id, Counter__c FROM Account WHERE Id = :objectId];
+        a.Counter__c = a.Counter__c + 1;
+        update a;
+        return null;
+    }
+    
+    @RemoteAction
+    global static PageReference increaseCounterForContact(String objectId) {
+        Contact c = [SELECT Id, Counter__c FROM Contact WHERE Id = :objectId];
+        c.Counter__c = c.Counter__c + 1;
+        update c;
+        return null;
+    }
+}
